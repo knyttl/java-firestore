@@ -65,8 +65,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -138,8 +137,7 @@ public final class LocalFirestoreHelper {
 
   public static final Map<String, Object> UPDATED_POJO;
 
-  public static final Date DATE;
-  public static final Timestamp TIMESTAMP;
+  public static final Instant TIMESTAMP;
   public static final GeoPoint GEO_POINT;
   public static final Blob BLOB;
   public static final FooList<SingleField> FOO_LIST = new FooList<>();
@@ -744,8 +742,7 @@ public final class LocalFirestoreHelper {
     public boolean trueValue = true;
     public boolean falseValue = false;
     public SingleField objectValue = new SingleField();
-    public Date dateValue = DATE;
-    public Timestamp timestampValue = TIMESTAMP;
+    public Instant timestampValue = TIMESTAMP;
     public List<String> arrayValue = ImmutableList.of("foo");
     public String nullValue = null;
     public Blob bytesValue = BLOB;
@@ -770,7 +767,6 @@ public final class LocalFirestoreHelper {
           && Objects.equals(foo, that.foo)
           && Objects.equals(doubleValue, that.doubleValue)
           && Objects.equals(objectValue, that.objectValue)
-          && Objects.equals(dateValue, that.dateValue)
           && Objects.equals(timestampValue, that.timestampValue)
           && Objects.equals(arrayValue, that.arrayValue)
           && Objects.equals(nullValue, that.nullValue)
@@ -782,16 +778,8 @@ public final class LocalFirestoreHelper {
 
   static {
     TRANSACTION_ID = "foo";
-
-    try {
-      DATE = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S z").parse("1985-03-18 08:20:00.123 CET");
-    } catch (ParseException e) {
-      throw new RuntimeException("Failed to parse date", e);
-    }
-
     TIMESTAMP =
-        Timestamp.ofTimeSecondsAndNanos(
-            TimeUnit.MILLISECONDS.toSeconds(DATE.getTime()),
+        Instant.ofEpochSecond(479978400L,
             123000); // Firestore truncates to microsecond precision.
     GEO_POINT = new GeoPoint(50.1430847, -122.9477780);
     BLOB = Blob.fromBytes(new byte[] {1, 2, 3});
@@ -885,7 +873,6 @@ public final class LocalFirestoreHelper {
     ALL_SUPPORTED_TYPES_MAP.put("trueValue", true);
     ALL_SUPPORTED_TYPES_MAP.put("falseValue", false);
     ALL_SUPPORTED_TYPES_MAP.put("objectValue", map("foo", (Object) "bar"));
-    ALL_SUPPORTED_TYPES_MAP.put("dateValue", Timestamp.of(DATE));
     ALL_SUPPORTED_TYPES_MAP.put("timestampValue", TIMESTAMP);
     ALL_SUPPORTED_TYPES_MAP.put("arrayValue", ImmutableList.of("foo"));
     ALL_SUPPORTED_TYPES_MAP.put("nullValue", null);
@@ -906,14 +893,6 @@ public final class LocalFirestoreHelper {
                 "objectValue",
                 Value.newBuilder()
                     .setMapValue(MapValue.newBuilder().putAllFields(SINGLE_FIELD_PROTO))
-                    .build())
-            .put(
-                "dateValue",
-                Value.newBuilder()
-                    .setTimestampValue(
-                        com.google.protobuf.Timestamp.newBuilder()
-                            .setSeconds(479978400)
-                            .setNanos(123000000)) // Dates only support millisecond precision.
                     .build())
             .put(
                 "timestampValue",

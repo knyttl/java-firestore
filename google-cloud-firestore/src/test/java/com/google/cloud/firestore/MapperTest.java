@@ -32,11 +32,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.firestore.v1.DatabaseRootName;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -464,14 +464,14 @@ public class MapperTest {
    * this form (b/67470108 has more details).
    */
   private static class UpperBoundedMapBean {
-    private Map<String, ? extends Date> values;
+    private Map<String, ? extends Instant> values;
 
-    public Map<String, ? extends Date> getValues() {
+    public Map<String, ? extends Instant> getValues() {
       return values;
     }
   }
 
-  private static class MultiBoundedMapBean<T extends Date & Serializable> {
+  private static class MultiBoundedMapBean<T extends Instant & Serializable> {
     private Map<String, T> values;
 
     public Map<String, T> getValues() {
@@ -480,9 +480,9 @@ public class MapperTest {
   }
 
   private static class MultiBoundedMapHolderBean {
-    private MultiBoundedMapBean<Date> map;
+    private MultiBoundedMapBean<Instant> map;
 
-    public MultiBoundedMapBean<Date> getMap() {
+    public MultiBoundedMapBean<Instant> getMap() {
       return map;
     }
   }
@@ -1478,7 +1478,7 @@ public class MapperTest {
 
   @Test
   public void beansCanContainUpperBoundedMaps() {
-    Date date = new Date(1491847082123L);
+    Instant date = Instant.ofEpochMilli(1491847082123L);
     Map<String, Object> source = mapAnyType("values", mapAnyType("foo", date));
     UpperBoundedMapBean bean = convertToCustomClass(source, UpperBoundedMapBean.class);
     Map<String, Object> expected = mapAnyType("foo", date);
@@ -1487,7 +1487,7 @@ public class MapperTest {
 
   @Test
   public void beansCanContainMultiBoundedMaps() {
-    Date date = new Date(1491847082123L);
+    Instant date = Instant.ofEpochMilli(1491847082123L);
     Map<String, Object> source = mapAnyType("map", mapAnyType("values", mapAnyType("foo", date)));
     MultiBoundedMapHolderBean bean = convertToCustomClass(source, MultiBoundedMapHolderBean.class);
 
@@ -1753,30 +1753,30 @@ public class MapperTest {
 
   @Test
   public void serializingUpperBoundedMapsWorks() {
-    Date date = new Date(1491847082123L);
+    Instant date = Instant.ofEpochMilli(1491847082123L);
     UpperBoundedMapBean bean = new UpperBoundedMapBean();
-    HashMap<String, Date> values = new HashMap<>();
+    HashMap<String, Instant> values = new HashMap<>();
     values.put("foo", date);
 
     bean.values = values;
     Map<String, Object> expected =
-        mapAnyType("values", mapAnyType("foo", new Date(date.getTime())));
+        mapAnyType("values", mapAnyType("foo", Instant.ofEpochMilli(date.toEpochMilli())));
     assertEquals(expected, serialize(bean));
   }
 
   @Test
   public void serializingMultiBoundedObjectsWorks() {
-    Date date = new Date(1491847082123L);
+    Instant date = Instant.ofEpochMilli(1491847082123L);
     MultiBoundedMapHolderBean holder = new MultiBoundedMapHolderBean();
 
-    HashMap<String, Date> values = new HashMap<>();
+    HashMap<String, Instant> values = new HashMap<>();
     values.put("foo", date);
 
     holder.map = new MultiBoundedMapBean<>();
     holder.map.values = values;
 
     Map<String, Object> expected =
-        mapAnyType("map", mapAnyType("values", mapAnyType("foo", new Date(date.getTime()))));
+        mapAnyType("map", mapAnyType("values", mapAnyType("foo", Instant.ofEpochMilli(date.toEpochMilli()))));
     assertEquals(expected, serialize(holder));
   }
 

@@ -138,7 +138,6 @@ public class ManageDataSnippetsIT extends BaseIntegrationTest {
     assertTrue(!city.getRegions().contains("east_coast"));
   }
 
-
   @Test
   public void testDeleteFields() throws Exception {
     manageDataSnippets.deleteFields();
