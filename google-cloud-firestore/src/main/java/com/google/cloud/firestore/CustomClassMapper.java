@@ -631,7 +631,7 @@ class CustomClassMapper {
     BeanMapper(Class<T> clazz) {
       this.clazz = clazz;
       throwOnUnknownProperties = clazz.isAnnotationPresent(ThrowOnExtraProperties.class);
-      warnOnUnknownProperties = !clazz.isAnnotationPresent(IgnoreExtraProperties.class);
+      warnOnUnknownProperties = false && !clazz.isAnnotationPresent(IgnoreExtraProperties.class);
       properties = new HashMap<>();
 
       setters = new HashMap<>();
